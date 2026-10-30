@@ -1,18 +1,15 @@
 import { Injectable, resource } from '@angular/core';
 import { importLibrary, setOptions } from '@googlemaps/js-api-loader';
-// os types não dependem do carregamento dinâmico da biblioteca
+import LatLng = google.maps.LatLng;
 import GeocoderResult = google.maps.GeocoderResult;
-import LatLng =  google.maps.LatLng;
-
-interface GoogleKeyConfig {
-  key?: string;
-  apiKey?: string;
-}
+import { GoogleKeyConfig } from './app-mapa.model';
 
 @Injectable({
   providedIn: 'root',
 })
-export class AppsService {
+export class AppMapaService {
+  readonly ZOOM = 13;
+  readonly ORIGEM = { lat: -3.742183326231264, lng: -38.536 };
   readonly mapsApi = resource({
     loader: async ({ abortSignal }) => {
       const response = await fetch('/gkey.json', { signal: abortSignal });
@@ -20,7 +17,7 @@ export class AppsService {
         throw new Error(`Falha ao buscar gkey.json (${response.statusText})`);
       }
       const config: GoogleKeyConfig = await response.json();
-      const apiKey = config.key ?? config.apiKey;
+      const apiKey = config.key;
       if (!apiKey) {
         throw new Error('Chave de API não encontrada em gkey.json');
       }

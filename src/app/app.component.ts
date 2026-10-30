@@ -1,15 +1,13 @@
 import { Component, inject, output, signal } from '@angular/core';
-import { GoogleMap, MapAdvancedMarker } from '@angular/google-maps';
 import { MatFabButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
-import { AppsService } from './app.service';
+import { AppMapaComponent } from './app-mapa/app-mapa.component';
+import { AppMapaService } from './app-mapa/app-mapa.service';
 // os types não dependem do carregamento dinâmico da biblioteca lá no service
 import GeocoderResult = google.maps.GeocoderResult;
-import IconMouseEvent = google.maps.IconMouseEvent;
-import MapMouseEvent = google.maps.MapMouseEvent;
 
 @Component({
-  imports: [GoogleMap, MatIcon, MatFabButton, MapAdvancedMarker],
+  imports: [MatIcon, MatFabButton, AppMapaComponent],
   selector: 'app-root',
   styles: `
     .mapa
@@ -17,9 +15,6 @@ import MapMouseEvent = google.maps.MapMouseEvent;
       grid-template-columns: 2fr 1fr
       //grid-template-rows: 1fr
       min-height: 100%
-
-    google-map
-      min-height: 480px
 
     fieldset
       div
@@ -33,22 +28,7 @@ import MapMouseEvent = google.maps.MapMouseEvent;
   `,
   template: `
     <div class="mapa">
-      @if (svc.mapsApi.isLoading()) {
-        <p>Carregando Google Maps...</p>
-      } @else if (svc.mapsApi.error()) {
-        <p>Erro ao carregar mapa: {{ svc.mapsApi.error() }}</p>
-      } @else if (svc.mapsApi.hasValue()) {
-        <google-map
-          (mapClick)="updateCoords($event)"
-          [center]="center()"
-          [mapId]="mapId()"
-          [zoom]="zoom()"
-          height="100%"
-          width="100%"
-        >
-          <map-advanced-marker [position]="coords()" />
-        </google-map>
-      }
+      <app-mapa mapId="m1" [coords]="coords()" (mapChange)="updateCoords($event)" />
       <fieldset>
         <legend>Geocoding</legend>
         <div>
@@ -67,11 +47,9 @@ import MapMouseEvent = google.maps.MapMouseEvent;
   `,
 })
 export class AppComponent {
-  protected readonly svc = inject(AppsService);
+  protected readonly service = inject(AppMapaService);
   // particulares deste mapa
   protected readonly center = signal({ lat: -3.742183326231264, lng: -38.536 });
-  protected readonly zoom = signal(13);
-  protected readonly mapId = signal('m');
   protected readonly err = signal('');
   // os que podem ser inputs
   protected readonly address = signal('');
@@ -79,13 +57,12 @@ export class AppComponent {
   // emitter
   readonly addrChange = output<GeocoderResult>();
 
-  protected async updateCoords(event?: MapMouseEvent | IconMouseEvent) {
-    if (!event) {
+  protected updateCoords(result: GeocoderResult) {
+    if (!result) {
       this.address.set('');
       return;
     }
     try {
-      const result = await this.svc.geocodeLatLng(event.latLng);
       this.address.set(result.formatted_address);
       this.coords.set(result.geometry.location.toJSON());
       this.addrChange.emit(result);
@@ -96,13 +73,13 @@ export class AppComponent {
   }
 
   protected async query(address: string) {
-    if(!address) {
+    if (!address) {
       this.err.set('informe endereço ou parte do endereço');
       return;
     }
     this.err.set('');
     try {
-      const result = await this.svc.geocodeAddress(address);
+      const result = await this.service.geocodeAddress(address);
       this.address.set(result.formatted_address);
       this.coords.set(result.geometry.location.toJSON());
       this.center.set(result.geometry.location.toJSON());
