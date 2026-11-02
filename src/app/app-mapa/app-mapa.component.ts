@@ -1,7 +1,7 @@
 import { Component, inject, input, output, signal } from '@angular/core';
 import { AppMapaService } from './app-mapa.service';
 import { GoogleMap, MapAdvancedMarker, MapPolygon } from '@angular/google-maps';
-import { MapCoords } from './app-mapa.model';
+import { MapCoords, MapPoly } from './app-mapa.model';
 import GeocoderResult = google.maps.GeocoderResult;
 import MapMouseEvent = google.maps.MapMouseEvent;
 import IconMouseEvent = google.maps.IconMouseEvent;
@@ -28,8 +28,8 @@ import PolyMouseEvent = google.maps.PolyMouseEvent;
         width="100%"
       >
         <map-advanced-marker [position]="coords()" />
-        @if (polygon().length > 0) {
-          <map-polygon (polygonClick)="updateCoords($event)" [paths]="polygon()" />
+        @if (poly().length > 0) {
+          <map-polygon (polygonClick)="updateCoords($event)" [paths]="poly()" />
         }
       </google-map>
     }
@@ -42,10 +42,10 @@ export class AppMapaComponent {
   readonly mapChange = output<GeocoderResult>();
 
   protected readonly center = signal<MapCoords>({ ...this.service.ORIGEM });
+  protected readonly poly = signal<MapCoords[]>([]);
   protected readonly zoom = signal(this.service.ZOOM);
 
   readonly mapId = input.required<string>();
-  readonly polygon = input<{ lat: number; lng: number }[]>([]);
   readonly coords = input<MapCoords, MapCoords>(
     { ...this.service.ORIGEM },
     {
@@ -55,6 +55,18 @@ export class AppMapaComponent {
       },
     },
   );
+  readonly polygon = input<MapCoords[], MapPoly>([], {
+    transform: (p: MapPoly): MapCoords[] => {
+      if (!p.lat?.length) return [];
+      const result = p.lat.reduce((acc, curr, i) => {
+        acc.push({ lat: p.lat[i], lng: p.lng[i] });
+        return acc;
+      }, [] as MapCoords[]);
+      console.log(p, result);
+      this.poly.set(result);
+      return result;
+    },
+  });
 
   protected async updateCoords(event: MapMouseEvent | IconMouseEvent | PolyMouseEvent) {
     if (!event.latLng) return;

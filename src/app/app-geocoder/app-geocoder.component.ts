@@ -58,6 +58,7 @@ export class AppGeocoderComponent {
     this.err.set('');
     try {
       const result = await this.service.geocodeAddress(address);
+      this.field.set(result.formatted_address);
       this.addrChange.emit(result);
     } catch (e) {
       this.err.set((e as Error).message);
