@@ -1,7 +1,7 @@
 import { Component, inject, input, output, signal } from '@angular/core';
 import { GoogleMap, MapAdvancedMarker, MapPolygon } from '@angular/google-maps';
 import { AppMapaService } from './app-mapa.service';
-import { MapCoords, MapPoly } from './app-mapa.model';
+import { MapCoords, MapPoly, polyToCoords } from './app-mapa.model';
 import GeocoderResult = google.maps.GeocoderResult;
 import MapMouseEvent = google.maps.MapMouseEvent;
 import IconMouseEvent = google.maps.IconMouseEvent;
@@ -57,12 +57,7 @@ export class AppMapaComponent {
   );
   readonly polygon = input<MapCoords[], MapPoly>([], {
     transform: (p: MapPoly): MapCoords[] => {
-      if (!p.lat?.length) return [];
-      const result = p.lat.reduce((acc, curr, i) => {
-        acc.push({ lat: p.lat[i], lng: p.lng[i] });
-        return acc;
-      }, [] as MapCoords[]);
-      console.log(p, result);
+      const result = polyToCoords(p);
       this.poly.set(result);
       return result;
     },
