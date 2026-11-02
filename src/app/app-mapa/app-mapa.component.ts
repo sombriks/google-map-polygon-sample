@@ -1,6 +1,6 @@
 import { Component, inject, input, output, signal } from '@angular/core';
-import { AppMapaService } from './app-mapa.service';
 import { GoogleMap, MapAdvancedMarker, MapPolygon } from '@angular/google-maps';
+import { AppMapaService } from './app-mapa.service';
 import { MapCoords, MapPoly } from './app-mapa.model';
 import GeocoderResult = google.maps.GeocoderResult;
 import MapMouseEvent = google.maps.MapMouseEvent;
