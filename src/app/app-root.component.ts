@@ -2,9 +2,9 @@ import { Component, signal } from '@angular/core';
 import { MatButton } from '@angular/material/button';
 import GeocoderResult = google.maps.GeocoderResult;
 import { AppMapaComponent } from './app-mapa/app-mapa.component';
-import { AppGeocoderComponent } from './app-geocoder/app-geocoder.component';
+import { AppGeocoderComponent } from './app-mapa/app-geocoder.component';
 import { coordsToPoly, MapPoly } from './app-mapa/app-mapa.model';
-import { AppPolyConfigComponent } from './app-poly-config/app-poly-config.component';
+import { AppPolyConfigComponent } from './app-mapa/app-poly-config.component';
 
 @Component({
   imports: [AppMapaComponent, AppGeocoderComponent, AppPolyConfigComponent, MatButton],

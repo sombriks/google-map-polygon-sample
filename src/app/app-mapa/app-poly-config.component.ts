@@ -1,6 +1,6 @@
 import { Component, inject, input, output, signal } from '@angular/core';
-import { AppMapaService } from '../app-mapa/app-mapa.service';
-import { MapCoords, MapPoly, polyToCoords } from '../app-mapa/app-mapa.model';
+import { AppMapaService } from './app-mapa.service';
+import { MapCoords, MapPoly, polyToCoords } from './app-mapa.model';
 import { MatButtonToggle, MatButtonToggleGroup } from '@angular/material/button-toggle';
 import { MatButton } from '@angular/material/button';
 

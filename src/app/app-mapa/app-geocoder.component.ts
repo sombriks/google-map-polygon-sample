@@ -1,7 +1,7 @@
 import { Component, inject, input, output, signal } from '@angular/core';
 import { MatFabButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
-import { AppMapaService } from '../app-mapa/app-mapa.service';
+import { AppMapaService } from './app-mapa.service';
 import GeocoderResult = google.maps.GeocoderResult;
 
 @Component({
