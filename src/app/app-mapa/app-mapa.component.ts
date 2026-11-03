@@ -29,13 +29,20 @@ import PolyMouseEvent = google.maps.PolyMouseEvent;
       >
         <map-advanced-marker
           (mapDragend)="updateCoords($event)"
-          [gmpDraggable]="editMode()"
+          [gmpDraggable]="!editMode()"
           [position]="coords()"
         />
         @if (poly().length > 0) {
           <map-polygon (polygonClick)="updateCoords($event)" [paths]="poly()" />
-          @if(editMode()) {
-            
+          @if (editMode()) {
+            @for (vertice of poly(); track $index) {
+              <map-advanced-marker
+                (mapDragend)="updateVertices($event, $index)"
+                (gmpClick)="verticeSelected.emit($index)"
+                [gmpDraggable]="true"
+                [position]="vertice"
+              />
+            }
           }
         }
       </google-map>
@@ -46,7 +53,9 @@ import PolyMouseEvent = google.maps.PolyMouseEvent;
 export class AppMapaComponent {
   protected readonly service = inject(AppMapaService);
 
-  readonly mapChange = output<GeocoderResult>();
+  readonly coordsChanged = output<GeocoderResult>();
+  readonly polygonChanged = output<MapCoords[]>();
+  readonly verticeSelected = output<number>();
 
   protected readonly center = signal<MapCoords>({ ...this.service.ORIGEM });
   protected readonly poly = signal<MapCoords[]>([]);
@@ -74,6 +83,18 @@ export class AppMapaComponent {
   protected async updateCoords(event: MapMouseEvent | IconMouseEvent | PolyMouseEvent) {
     if (!event.latLng || this.editMode()) return;
     const result = await this.service.geocodeLatLng(event.latLng);
-    this.mapChange.emit(result);
+    this.coordsChanged.emit(result);
+  }
+
+  protected updateVertices(event: MapMouseEvent | IconMouseEvent | PolyMouseEvent, index: number) {
+    if (!event.latLng) return;
+    const updatedPoly = [...this.poly()];
+    updatedPoly[index] = {
+      lat: event.latLng.lat(),
+      lng: event.latLng.lng(),
+    };
+    this.poly.set(updatedPoly);
+    this.polygonChanged.emit(updatedPoly);
+    this.verticeSelected.emit(index);
   }
 }

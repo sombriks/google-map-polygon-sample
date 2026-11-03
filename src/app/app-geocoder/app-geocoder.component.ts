@@ -41,7 +41,7 @@ export class AppGeocoderComponent {
   protected readonly field = signal('');
   protected readonly err = signal('');
 
-  readonly addrChange = output<GeocoderResult>();
+  readonly addrChanged = output<GeocoderResult>();
 
   readonly address = input.required<string, string>({
     transform: (value: string) => {
@@ -59,7 +59,7 @@ export class AppGeocoderComponent {
     try {
       const result = await this.service.geocodeAddress(address);
       this.field.set(result.formatted_address);
-      this.addrChange.emit(result);
+      this.addrChanged.emit(result);
     } catch (e) {
       this.err.set((e as Error).message);
     }

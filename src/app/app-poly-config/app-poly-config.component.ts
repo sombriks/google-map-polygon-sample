@@ -5,7 +5,7 @@ import { MatButtonToggle, MatButtonToggleGroup } from '@angular/material/button-
 import { MatButton } from '@angular/material/button';
 
 @Component({
-  selector: 'app-poly-editor',
+  selector: 'app-poly-config',
   standalone: true,
   styles: `
     fieldset
@@ -20,9 +20,11 @@ import { MatButton } from '@angular/material/button';
         <button matButton="outlined" [disabled]="!poly()?.lat?.length" (click)="removeVertice()">
           -
         </button>
-        <mat-button-toggle-group [value]="currentVertice()">
+        <mat-button-toggle-group [value]="current()">
           @for (l of poly()?.lat; track $index) {
             <mat-button-toggle [value]="$index">{{ $index }}</mat-button-toggle>
+          } @empty {
+            <i>Adicione vertices</i>
           }
         </mat-button-toggle-group>
         <button matButton="outlined" (click)="addVertice()">+</button>
@@ -41,7 +43,7 @@ export class AppPolyConfigComponent {
     lat: [],
     lng: [],
   });
-  protected readonly currentVertice = signal<number>(0);
+  protected readonly current = signal<number>(0);
 
   readonly editDone = output<boolean>();
   readonly polygonChanged = output<MapCoords[]>();
@@ -59,9 +61,15 @@ export class AppPolyConfigComponent {
       },
     },
   );
+  readonly currentVertice = input<number, number>(0, {
+    transform: (n: number): number => {
+      this.current.set(n);
+      return n;
+    },
+  });
 
   protected removeVertice() {
-    const indexToRemove = this.currentVertice();
+    const indexToRemove = this.current();
     const currentPoly = this.poly();
     const newLatArray = [...currentPoly.lat];
     const newLngArray = [...currentPoly.lng];
@@ -71,7 +79,7 @@ export class AppPolyConfigComponent {
       lat: newLatArray,
       lng: newLngArray,
     });
-    this.currentVertice.set(indexToRemove > 0 ? indexToRemove - 1 : 0);
+    this.current.set(indexToRemove > 0 ? indexToRemove - 1 : 0);
     this.polygonChanged.emit(polyToCoords(this.poly()));
   }
 
@@ -87,7 +95,7 @@ export class AppPolyConfigComponent {
     const offsetLng = radius * Math.cos(angle);
     const newLat = baseCoords.lat + offsetLat;
     const newLng = baseCoords.lng + offsetLng;
-    const indexToInsert = count > 0 ? this.currentVertice() + 1 : 0;
+    const indexToInsert = count > 0 ? this.current() + 1 : 0;
     const newLatArray = [...currentPoly.lat];
     const newLngArray = [...currentPoly.lng];
     newLatArray.splice(indexToInsert, 0, newLat);
@@ -96,7 +104,6 @@ export class AppPolyConfigComponent {
       lat: newLatArray,
       lng: newLngArray,
     });
-    this.currentVertice.set(indexToInsert);
     this.polygonChanged.emit(polyToCoords(this.poly()));
   }
 }

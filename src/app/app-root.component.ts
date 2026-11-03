@@ -19,20 +19,23 @@ import { AppPolyConfigComponent } from './app-poly-config/app-poly-config.compon
   template: `
     <div class="mapa">
       <app-mapa
-        mapId="m1"
-        [coords]="coords()"
-        [polygon]="polygon()"
+        (polygonChanged)="polygon.set(coordsToPoly($event))"
+        (verticeSelected)="currentVertice.set($event)"
+        (coordsChanged)="updateCoords($event)"
         [editMode]="editDone()"
-        (mapChange)="updateCoords($event)"
+        [polygon]="polygon()"
+        [coords]="coords()"
+        mapId="m1"
       />
       <div>
-        <app-geocoder [address]="address()" (addrChange)="updateCoords($event)" />
+        <app-geocoder [address]="address()" (addrChanged)="updateCoords($event)" />
         @if (editDone()) {
-          <app-poly-editor
-            [coords]="coords()"
-            [polygon]="polygon()"
+          <app-poly-config
             (polygonChanged)="polygon.set(coordsToPoly($event))"
+            [currentVertice]="currentVertice()"
             (editDone)="editDone.set(false)"
+            [polygon]="polygon()"
+            [coords]="coords()"
           />
         } @else {
           <button matButton="outlined" (click)="editDone.set(true)">Edit</button>
@@ -49,6 +52,7 @@ export class AppRootComponent {
     lng: [],
   });
   protected readonly editDone = signal(false);
+  protected currentVertice = signal(0);
 
   protected updateCoords(result: GeocoderResult) {
     if (!result) {
