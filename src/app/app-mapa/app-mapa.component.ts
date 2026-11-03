@@ -27,9 +27,16 @@ import PolyMouseEvent = google.maps.PolyMouseEvent;
         height="100%"
         width="100%"
       >
-        <map-advanced-marker [position]="coords()" />
+        <map-advanced-marker
+          (mapDragend)="updateCoords($event)"
+          [gmpDraggable]="editMode()"
+          [position]="coords()"
+        />
         @if (poly().length > 0) {
           <map-polygon (polygonClick)="updateCoords($event)" [paths]="poly()" />
+          @if(editMode()) {
+            
+          }
         }
       </google-map>
     }
@@ -62,9 +69,10 @@ export class AppMapaComponent {
       return result;
     },
   });
+  readonly editMode = input<boolean>(false);
 
   protected async updateCoords(event: MapMouseEvent | IconMouseEvent | PolyMouseEvent) {
-    if (!event.latLng) return;
+    if (!event.latLng || this.editMode()) return;
     const result = await this.service.geocodeLatLng(event.latLng);
     this.mapChange.emit(result);
   }
