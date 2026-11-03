@@ -83,6 +83,14 @@ export class AppMapaComponent {
   protected async updateCoords(event: MapMouseEvent | IconMouseEvent | PolyMouseEvent) {
     if (!event.latLng || this.editMode()) return;
     const result = await this.service.geocodeLatLng(event.latLng);
+    const oldCoord = this.coords();
+    const newCoords = event.latLng.toJSON();
+    const delta = { lat: newCoords.lat - oldCoord.lat, lng: newCoords.lng - oldCoord.lng };
+    const updatedPoly = this.poly().map((v) => ({
+      lat: v.lat + delta.lat,
+      lng: v.lng + delta.lng,
+    }));
+    this.polygonChanged.emit(updatedPoly);
     this.coordsChanged.emit(result);
   }
 
