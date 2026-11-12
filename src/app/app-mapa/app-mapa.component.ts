@@ -1,4 +1,4 @@
-import { Component, inject, input, output, signal } from '@angular/core';
+import { Component, inject, input, linkedSignal, output, signal } from '@angular/core';
 import { GoogleMap, MapAdvancedMarker, MapPolygon } from '@angular/google-maps';
 import { AppMapaService } from './app-mapa.service';
 import { MapCoords, MapPoly, polyToCoords } from './app-mapa.model';
@@ -57,28 +57,17 @@ export class AppMapaComponent {
   readonly polygonChanged = output<MapCoords[]>();
   readonly verticeSelected = output<number>();
 
-  protected readonly center = signal<MapCoords>({ ...this.service.ORIGEM });
-  protected readonly poly = signal<MapCoords[]>([]);
-  protected readonly zoom = signal(this.service.ZOOM);
-
   readonly mapId = input.required<string>();
-  readonly coords = input<MapCoords, MapCoords>(
-    { ...this.service.ORIGEM },
-    {
-      transform: (c: MapCoords) => {
-        this.center.set(c);
-        return c;
-      },
-    },
-  );
-  readonly polygon = input<MapCoords[], MapPoly>([], {
-    transform: (p: MapPoly): MapCoords[] => {
-      const result = polyToCoords(p);
-      this.poly.set(result);
-      return result;
-    },
+  readonly coords = input<MapCoords>({ ...this.service.ORIGEM });
+  readonly polygon = input<MapPoly>({
+    lat: [],
+    lng: [],
   });
   readonly editMode = input<boolean>(false);
+
+  protected readonly center = linkedSignal(() => this.coords());
+  protected readonly poly = linkedSignal(() => polyToCoords(this.polygon()));
+  protected readonly zoom = signal(this.service.ZOOM);
 
   protected async updateCoords(event: MapMouseEvent | IconMouseEvent | PolyMouseEvent) {
     if (!event.latLng || this.editMode()) return;

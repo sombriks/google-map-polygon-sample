@@ -1,4 +1,4 @@
-import { Component, inject, input, output, signal } from '@angular/core';
+import { Component, inject, input, linkedSignal, output } from '@angular/core';
 import { AppMapaService } from './app-mapa.service';
 import { MapCoords, MapPoly, polyToCoords } from './app-mapa.model';
 import { MatButtonToggle, MatButtonToggleGroup } from '@angular/material/button-toggle';
@@ -39,34 +39,19 @@ import { MatButton } from '@angular/material/button';
 })
 export class AppPolyConfigComponent {
   protected readonly service = inject(AppMapaService);
-  protected readonly poly = signal<MapPoly>({
-    lat: [],
-    lng: [],
-  });
-  protected readonly current = signal<number>(0);
 
   readonly editDone = output<boolean>();
   readonly polygonChanged = output<MapCoords[]>();
 
   readonly coords = input<MapCoords>({ ...this.service.ORIGEM });
-  readonly polygon = input<MapPoly, MapPoly>(
-    {
-      lat: [],
-      lng: [],
-    },
-    {
-      transform: (m: MapPoly): MapPoly => {
-        this.poly.set(m);
-        return m;
-      },
-    },
-  );
-  readonly currentVertice = input<number, number>(0, {
-    transform: (n: number): number => {
-      this.current.set(n);
-      return n;
-    },
+  readonly polygon = input<MapPoly>({
+    lat: [],
+    lng: [],
   });
+  readonly currentVertice = input<number>(0);
+
+  protected readonly poly = linkedSignal(() => this.polygon());
+  protected readonly current = linkedSignal(() => this.currentVertice());
 
   protected removeVertice() {
     const indexToRemove = this.current();
